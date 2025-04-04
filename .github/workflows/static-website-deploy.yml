@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     if: |
-      github.repository == 'Greenstand/treetracker-wallet-app'
+      github.repository == 'Greenstand/treetracker-wallet-app' || github.repository == 'AmithPremGit/treetracker-wallet-app'
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
