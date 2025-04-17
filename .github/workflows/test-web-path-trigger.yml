@@ -5,7 +5,7 @@ on:
     branches:
       - check-workflow
     paths:
-      - "apps/user/**" # Only trigger for changes in the apps/user directory
+      - "apps/web/**" # Only trigger for changes in the apps/user directory
 
 jobs:
   debug-path-trigger:
