@@ -1,0 +1,33 @@
+name: Test Semantic Release
+
+on:
+  push:
+    branches:
+      - fix-semantic-release
+    paths:
+      - "apps/user/**"
+
+jobs:
+  test_release:
+    name: Test Semantic Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+
+      - name: Yarn Clean Install
+        run: yarn workspace user install
+
+      - name: Install Semantic Release
+        run: cd apps/user && yarn add -D semantic-release @semantic-release/git @semantic-release/exec @semantic-release/changelog
+
+      - name: Test Semantic Release
+        run: cd apps/user && npx semantic-release --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
