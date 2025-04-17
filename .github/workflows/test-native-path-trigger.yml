@@ -1,0 +1,34 @@
+name: Test User Path Trigger
+
+on:
+  push:
+    branches:
+      - check-workflow
+    paths:
+      - "apps/native/**" # Only trigger for changes in the apps/user directory
+
+jobs:
+  debug-path-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history so we can see what files changed
+      
+      - name: Print changed files
+        run: |
+          echo "Changed files in this commit:"
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+      
+      - name: Print environment variables
+        run: |
+          echo "GitHub event name: ${{ github.event_name }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub repository: ${{ github.repository }}"
+          echo "GitHub base ref: ${{ github.base_ref }}"
+      
+      - name: Verify path pattern match
+        run: |
+          echo "This job should only run if files in apps/user/ directory were changed."
+          echo "If you're seeing this message for changes outside apps/user/, there's an issue with path filtering."
