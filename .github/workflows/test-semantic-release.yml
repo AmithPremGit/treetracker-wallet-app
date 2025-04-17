@@ -21,21 +21,40 @@ jobs:
         with:
           node-version: "20.x"
 
-      - name: Yarn Clean Install
-        run: yarn workspace user install
-
-      - name: Install Semantic Release
+      - name: Create test .releaserc file
         run: |
           cd apps/user
-          yarn add --dev semantic-release @semantic-release/git @semantic-release/exec @semantic-release/changelog
+          echo '{
+            "branches": ["check-workflow"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator"
+            ],
+            "dryRun": true,
+            "ci": false
+          }' > .releaserc
 
       - name: Test Default Tag Format
         run: |
           cd apps/user
-          npx semantic-release --dry-run --no-ci --branches check-workflow --no-verify-conditions
+          npx semantic-release --dry-run
         continue-on-error: true
+
+      - name: Create test .releaserc with custom tag format
+        run: |
+          cd apps/user
+          echo '{
+            "branches": ["check-workflow"],
+            "tagFormat": "user-v${version}",
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator"
+            ],
+            "dryRun": true,
+            "ci": false
+          }' > .releaserc
 
       - name: Test Custom Tag Format
         run: |
           cd apps/user
-          npx semantic-release --dry-run --no-ci --branches check-workflow --no-verify-conditions --tag-format 'user-v${version}'
+          npx semantic-release --dry-run
