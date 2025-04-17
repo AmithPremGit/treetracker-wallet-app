@@ -32,10 +32,10 @@ jobs:
       - name: Test Default Tag Format
         run: |
           cd apps/user
-          npx semantic-release --dry-run --no-ci --branches check-workflow
+          npx semantic-release --dry-run --no-ci --branches check-workflow --no-verify-conditions
         continue-on-error: true
 
       - name: Test Custom Tag Format
         run: |
           cd apps/user
-          npx semantic-release --dry-run --no-ci --branches check-workflow --tag-format 'user-v${version}'
+          npx semantic-release --dry-run --no-ci --branches check-workflow --no-verify-conditions --tag-format 'user-v${version}'
