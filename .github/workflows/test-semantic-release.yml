@@ -28,6 +28,6 @@ jobs:
         run: cd apps/user && yarn add -D semantic-release @semantic-release/git @semantic-release/exec @semantic-release/changelog
 
       - name: Test Semantic Release
-        run: cd apps/user && npx semantic-release --dry-run
+        run: cd apps/user && npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
