@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ["fix-semantic-release"],
+  branches: ["main", "fix-semantic-release"], // Including your test branch
   tagFormat: "user-v${version}",
   plugins: [
     "@semantic-release/commit-analyzer",
@@ -11,18 +11,13 @@ module.exports = {
       },
     ],
     [
-      "@semantic-release/npm",
-      {
-        pkgRoot: ".",
-      },
-    ],
-    [
       "@semantic-release/git",
       {
-        assets: ["package.json", "CHANGELOG.md"],
+        assets: ["CHANGELOG.md"], // Remove package.json from here
         message:
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
     ],
+    ["@semantic-release/github", {}],
   ],
 };
