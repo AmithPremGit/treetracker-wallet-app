@@ -1,0 +1,35 @@
+name: Test Semantic Release Tag Format
+
+on:
+  workflow_dispatch:  # This allows manual triggering
+
+jobs:
+  test-semantic-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: |
+          cd apps/user
+          yarn install
+          yarn add --dev semantic-release
+
+      - name: Test default tag format
+        run: |
+          cd apps/user
+          echo "Testing default tag format..."
+          yarn semantic-release --dry-run
+        continue-on-error: true  # Allow this to fail
+
+      - name: Test custom tag format
+        run: |
+          cd apps/user
+          echo "Testing custom tag format..."
+          yarn semantic-release --dry-run --tag-format 'user-v${version}'
