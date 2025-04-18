@@ -24,9 +24,10 @@ jobs:
       - name: Install all dependencies
         run: yarn install --immutable
 
-      - name: Manually install semantic-release into apps/user
+      - name: Set up standalone semantic-release in apps/user
         working-directory: apps/user
         run: |
+          rm -rf node_modules yarn.lock package.json
           yarn init -y
           yarn add -D semantic-release \
             @semantic-release/changelog \
@@ -36,16 +37,12 @@ jobs:
             @semantic-release/commit-analyzer \
             @semantic-release/release-notes-generator
       
-      - name: Run semantic-release from local bin
+      - name: Check semantic-release binary exists
+        working-directory: apps/user
+        run: ls -la ./node_modules/.bin/semantic-release
+      
+      - name: Run semantic-release
         working-directory: apps/user
         run: ./node_modules/.bin/semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify semantic-release install
-        working-directory: apps/user
-        run: |
-          echo "Checking bin:"
-          ls -l ./node_modules/.bin | grep semantic
-          echo "Checking module:"
-          ls -l ./node_modules/@semantic-release
