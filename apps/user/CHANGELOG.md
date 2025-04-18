@@ -1,3 +1,12 @@
+## [1.0.1](https://github.com/AmithPremGit/treetracker-wallet-app/compare/user-v1.0.0...user-v1.0.1) (2025-04-18)
+
+
+### Bug Fixes
+
+* set react version in web to 18.3.1 ([f94d07f](https://github.com/AmithPremGit/treetracker-wallet-app/commit/f94d07f20a61e9a46e8d2028f4605ef2f7c8dd85))
+* update releaserc.js ([d77a596](https://github.com/AmithPremGit/treetracker-wallet-app/commit/d77a596311a4f9dfbaedb38ab10749b8a772dbbc))
+* update releaserc.js to work for current branch ([55644e7](https://github.com/AmithPremGit/treetracker-wallet-app/commit/55644e71aa62c331ffb33d2cd75713ac02bfae2c))
+
 # 1.0.0 (2025-04-17)
 
 
