@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: "20.x"
 
-      - name: Yarn Clean Install
-        run: yarn workspace user install
+      - name: Install all dependencies
+        run: yarn install --immutable
 
-      - name: Install Semantic Release Plugins
+      - name: Install semantic-release plugins in apps/user
         working-directory: apps/user
         run: |
           yarn add -D semantic-release \
@@ -34,14 +34,9 @@ jobs:
             @semantic-release/github \
             @semantic-release/commit-analyzer \
             @semantic-release/release-notes-generator
-      
-      - name: Test Semantic Release
+
+      - name: Run semantic-release from apps/user
         working-directory: apps/user
         run: yarn semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Debug Package Installation
-        run: |
-          cd apps/user
-          ls -la node_modules/@semantic-release
