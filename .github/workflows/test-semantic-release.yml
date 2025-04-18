@@ -41,6 +41,10 @@ jobs:
         working-directory: apps/user
         run: ls -la ./node_modules/.bin/semantic-release
       
+      - name: Disable commit-msg hook in CI
+        working-directory: apps/user
+        run: git config core.hooksPath /dev/null
+
       - name: Run semantic-release
         working-directory: apps/user
         run: ./node_modules/.bin/semantic-release --no-ci
