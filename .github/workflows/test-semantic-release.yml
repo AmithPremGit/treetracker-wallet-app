@@ -37,6 +37,6 @@ jobs:
 
       - name: Run semantic-release from apps/user
         working-directory: apps/user
-        run: yarn semantic-release --no-ci
+        run: yarn --cwd . semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
