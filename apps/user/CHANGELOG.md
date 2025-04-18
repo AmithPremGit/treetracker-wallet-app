@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/AmithPremGit/treetracker-wallet-app/compare/user-v1.0.1...user-v1.0.2) (2025-04-18)
+
+
+### Bug Fixes
+
+* update testfile ([d4e26e0](https://github.com/AmithPremGit/treetracker-wallet-app/commit/d4e26e07e06cd9110a5ce8a06d2ba81cc6dd5b03))
+
 ## [1.0.1](https://github.com/AmithPremGit/treetracker-wallet-app/compare/user-v1.0.0...user-v1.0.1) (2025-04-18)
 
 
