@@ -25,19 +25,18 @@ jobs:
         run: yarn install --immutable
 
       - name: Install semantic-release plugins in apps/user
-        working-directory: apps/user
-        run: |
-          yarn add -D semantic-release \
+        run: yarn workspace user add -D semantic-release \
             @semantic-release/changelog \
             @semantic-release/git \
             @semantic-release/npm \
             @semantic-release/github \
             @semantic-release/commit-analyzer \
             @semantic-release/release-notes-generator
+      
 
-      - name: Run semantic-release from apps/user
+      - name: Run semantic-release via Yarn
         working-directory: apps/user
-        run: ./node_modules/.bin/semantic-release --no-ci
+        run: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
