@@ -37,6 +37,13 @@ jobs:
 
       - name: Run semantic-release from apps/user
         working-directory: apps/user
-        run: yarn --cwd . semantic-release --no-ci
+        run: ./node_modules/.bin/semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug semantic-release binary
+        working-directory: apps/user
+        run: |
+          echo "Using semantic-release from:"
+          which semantic-release
+          ls -la ./node_modules/.bin/semantic-release
