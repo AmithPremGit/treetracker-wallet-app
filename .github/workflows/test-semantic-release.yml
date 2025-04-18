@@ -1,4 +1,4 @@
-name: Test Semantic Release
+name: Semantic Release for User API
 
 on:
   push:
@@ -8,45 +8,29 @@ on:
       - "apps/user/**"
 
 jobs:
-  test_release:
-    name: Test Semantic Release
+  release:
+    name: Semantic Release
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'skip-ci') }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # This ensures semantic-release can analyze all commits
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v3
         with:
           node-version: "20.x"
 
-      - name: Install all dependencies
-        run: yarn install --immutable
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        
+      - name: Install Semantic Release
+        run: yarn add -D semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/npm @semantic-release/github
 
-      - name: Set up standalone semantic-release in apps/user
-        working-directory: apps/user
-        run: |
-          rm -rf node_modules yarn.lock package.json
-          yarn init -y
-          yarn add -D semantic-release \
-            @semantic-release/changelog \
-            @semantic-release/git \
-            @semantic-release/npm \
-            @semantic-release/github \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator
-      
-      - name: Check semantic-release binary exists
-        working-directory: apps/user
-        run: ls -la ./node_modules/.bin/semantic-release
-      
-      - name: Disable commit-msg hook in CI
-        working-directory: apps/user
-        run: git config core.hooksPath /dev/null
-
-      - name: Run semantic-release
-        working-directory: apps/user
-        run: ./node_modules/.bin/semantic-release --no-ci
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: apps/user
+        run: npx semantic-release --debug

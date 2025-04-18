@@ -1,3 +1,4 @@
+// apps/user/release.config.js
 module.exports = {
   branches: ["main", "fix-semantic-release"],
   tagFormat: "user-v${version}",
@@ -14,6 +15,7 @@ module.exports = {
       "@semantic-release/npm",
       {
         npmPublish: false,
+        pkgRoot: ".",
       },
     ],
     [
