@@ -24,14 +24,20 @@ jobs:
       - name: Yarn Clean Install
         run: yarn workspace user install
 
-      - name: Install Semantic Release
-        run: cd apps/user && yarn add -D semantic-release @semantic-release/git @semantic-release/exec @semantic-release/changelog
-
-      - name: Test Semantic Release
+      - name: Install Semantic Release Plugins
+        working-directory: apps/user
         run: |
-          cd apps/user
-          yarn add -D semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/npm @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator
-          yarn semantic-release --no-ci
+          yarn add -D semantic-release \
+            @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/npm \
+            @semantic-release/github \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator
+      
+      - name: Test Semantic Release
+        working-directory: apps/user
+        run: yarn semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
