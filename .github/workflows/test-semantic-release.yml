@@ -24,25 +24,28 @@ jobs:
       - name: Install all dependencies
         run: yarn install --immutable
 
-      - name: Install semantic-release plugins in apps/user
+      - name: Manually install semantic-release into apps/user
+        working-directory: apps/user
         run: |
-          yarn workspace user add -D semantic-release\
-            @semantic-release/changelog\
-            @semantic-release/git\
-            @semantic-release/npm\
-            @semantic-release/github\
-            @semantic-release/commit-analyzer\
+          yarn init -y
+          yarn add -D semantic-release \
+            @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/npm \
+            @semantic-release/github \
+            @semantic-release/commit-analyzer \
             @semantic-release/release-notes-generator
       
-      - name: Run semantic-release scoped to apps/user
+      - name: Run semantic-release from local bin
         working-directory: apps/user
-        run: yarn release
+        run: ./node_modules/.bin/semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug semantic-release binary
+      - name: Verify semantic-release install
         working-directory: apps/user
         run: |
-          echo "Using semantic-release from:"
-          which semantic-release
-          ls -la ./node_modules/.bin/semantic-release
+          echo "Checking bin:"
+          ls -l ./node_modules/.bin | grep semantic
+          echo "Checking module:"
+          ls -l ./node_modules/@semantic-release
