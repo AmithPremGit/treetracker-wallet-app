@@ -1,5 +1,4 @@
 name: Service CI/CD Pipeline to Release and Deploy to Dev Env
-
 on:
   push:
     branches:
@@ -16,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # This is important for semantic-release to work properly
+          fetch-depth: 0 # Ensures semantic-release has access to full git history for proper versioning
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v3
@@ -26,21 +25,24 @@ jobs:
       - name: Yarn Clean Install
         run: yarn workspace user install
 
+      # Install semantic-release locally in apps/user instead of globally
       - name: Install semantic-release dependencies
         working-directory: apps/user
         run: |
           yarn add -D semantic-release \
-            @semantic-release/changelog \
-            @semantic-release/git \
-            @semantic-release/npm \
-            @semantic-release/github \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator
+          @semantic-release/changelog \
+          @semantic-release/git \
+          @semantic-release/npm \
+          @semantic-release/github \
+          @semantic-release/commit-analyzer \
+          @semantic-release/release-notes-generator
 
+      # Disable Git hooks to prevent issues with commit-msg hooks in CI
       - name: Disable Git hooks in CI
         working-directory: apps/user
         run: git config core.hooksPath /dev/null
 
+      # Run semantic-release from apps/user directory with locally installed package
       - name: Semantic Release
         working-directory: apps/user
         run: ./node_modules/.bin/semantic-release --no-ci
