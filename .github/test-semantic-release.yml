@@ -1,0 +1,43 @@
+name: Test Semantic Release
+
+on:
+  push:
+    branches:
+      - test-workflow
+    paths:
+      - "apps/user/**"
+
+jobs:
+  test_release:
+    name: Test Semantic Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+      - name: Install semantic-release dependencies (locally in apps/user)
+        working-directory: apps/user
+        run: |
+          yarn add -D semantic-release \
+            @semantic-release/changelog \
+            @semantic-release/git \
+            @semantic-release/npm \
+            @semantic-release/github \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator
+        
+      - name: Disable Git hooks (commit-msg) in CI
+        working-directory: apps/user
+        run: git config core.hooksPath /dev/null
+        
+      - name: Run semantic-release from apps/user
+        working-directory: apps/user
+        run: ./node_modules/.bin/semantic-release --no-ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
