@@ -37,7 +37,7 @@ jobs:
           @semantic-release/commit-analyzer \
           @semantic-release/release-notes-generator
 
-      # Disable Git hooks to prevent issues with commit-msg hooks in CI
+      # Disable Git hooks to prevent husky errors with semantic-release commit messages that exceed 100 characters
       - name: Disable Git hooks in CI
         working-directory: apps/user
         run: git config core.hooksPath /dev/null
