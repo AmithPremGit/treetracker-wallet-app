@@ -61,9 +61,10 @@ export default function Login() {
         return;
       }
 
-      localStorage.setItem("isAuth", "true");
-
-      localStorage.setItem("token", data.access_token);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("isAuth", "true");
+        localStorage.setItem("token", data.access_token);
+      }
       //@ts-ignore
 
       router.push("/home");

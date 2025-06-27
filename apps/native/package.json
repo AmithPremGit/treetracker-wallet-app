@@ -13,7 +13,7 @@
     "e2e:test": "bash -c \"maestro test ../../packages/.maestro/$1\"",
     "lint": "expo lint",
     "lint-fix": "eslint . --fix",
-    "test:tsc": " tsc",
+    "test:tsc": "tsc",
     "pre-commit": "lint-staged"
   },
   "jest": {
@@ -38,9 +38,8 @@
     "jotai": "^2.9.0",
     "metro-react-native-babel-transformer": "^0.77.0",
     "prettier": "^3.3.2",
-    "react": "19.0.0",
-    "react-compiler-runtime": "^19.1.0-rc.2",
-    "react-dom": "19.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-native": "0.79.2",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-paper": "^5.12.3",
@@ -55,10 +54,9 @@
     "@babel/core": "^7.20.0",
     "@babel/eslint-parser": "^7.5.4",
     "@types/jest": "^29.5.12",
-    "@types/react": "~19.0.10",
-    "@types/react-test-renderer": "^19.0.10",
+    "@types/react": "~18.3.3",
+    "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/parser": "^7.16.0",
-    "babel-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint": "^9.25.1",
     "eslint-config-expo": "~9.2.0",
     "eslint-config-prettier": "^9.1.0",
@@ -68,7 +66,7 @@
     "jest-expo": "~53.0.5",
     "lint-staged": "^15.2.7",
     "prettier": "^3.3.2",
-    "react-test-renderer": "18.2.0",
+    "react-test-renderer": "18.3.1",
     "typescript": "~5.8.3"
   },
   "private": true

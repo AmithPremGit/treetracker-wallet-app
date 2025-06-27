@@ -12,21 +12,21 @@ if (!isWeb) {
 
 export const storage = {
   getItem: async (key: string) => {
-    if (isWeb) {
+    if (isWeb && typeof window !== "undefined") {
       return localStorage.getItem(key);
     } else {
       return AsyncStorage ? await AsyncStorage.getItem(key) : null;
     }
   },
   setItem: async (key: string, value: string) => {
-    if (isWeb) {
+    if (isWeb && typeof window !== "undefined") {
       localStorage.setItem(key, value);
     } else if (AsyncStorage) {
       await AsyncStorage.setItem(key, value);
     }
   },
   removeItem: async (key: string) => {
-    if (isWeb) {
+    if (isWeb && typeof window !== "undefined") {
       localStorage.removeItem(key);
     } else if (AsyncStorage) {
       await AsyncStorage.removeItem(key);

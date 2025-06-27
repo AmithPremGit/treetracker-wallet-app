@@ -3,22 +3,28 @@
 
 import { useSession } from "core";
 import { useRouter } from "next/navigation";
-import { useEffect, ReactNode } from "react";
+import { useEffect, useState, ReactNode } from "react";
 
 type ProtectedRouteProps = {
   children: ReactNode;
 };
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // const { isAuth } = useSession("login");
-  const isAuth = localStorage.getItem("isAuth");
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuth) {
+    const auth = localStorage.getItem("isAuth");
+    setIsAuth(auth === "true");
+
+    if (auth !== "true") {
       router.replace("/login");
     }
-  }, [isAuth, router]);
+  }, [router]);
+
+  if (isAuth === null) {
+    return null;
+  }
 
   return <>{children}</>;
 }

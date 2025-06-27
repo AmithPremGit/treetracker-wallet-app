@@ -48,8 +48,7 @@ export function ActivityItem({
             color={
               amount > 0 && status !== "Pending" ? "green" : "textSecondary"
             }>
-            {status === "Pending" ? "" : amount > 0 ? "+" : ""}
-            {amount}
+            {status === "Pending" ? amount : amount > 0 ? `+${amount}` : amount}
           </Typography>
         </Stack>
       </CardContent>

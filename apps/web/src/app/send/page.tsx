@@ -12,7 +12,11 @@ import {
 import { ActivityItem } from "../home/ActivityItem";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 
-const walletsData = [{ title: "Restaurant XY" }, { title: "Greenstand" }];
+// const walletsData = [{ title: "Restaurant XY" }, { title: "Greenstand" }];
+const walletsData = [
+  { title: "Restaurant XY", amount: 25.5, status: "Completed" },
+  { title: "Greenstand", amount: 12.0, status: "Pending" },
+];
 
 export default function Send() {
   return (
@@ -40,8 +44,17 @@ export default function Send() {
 
       <Box sx={{ mt: 4 }}>
         <Typography>Top wallets</Typography>
-        {walletsData.map((item, index) => (
+        {/* {walletsData.map((item, index) => (
           <ActivityItem key={index} title={item.title} />
+        ))} */}
+
+        {walletsData.map((item, index) => (
+          <ActivityItem
+            key={index}
+            title={item.title}
+            amount={item.amount}
+            status={item.status}
+          />
         ))}
       </Box>
     </Box>
