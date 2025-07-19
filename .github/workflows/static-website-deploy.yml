@@ -116,7 +116,23 @@ jobs:
               ;;
           esac
 
+          echo "Verifying resources before deployment..."
+
+          # Check if the S3 bucket exists
+          if ! aws s3 ls "s3://$BUCKET" > /dev/null 2>&1; then
+            echo "S3 bucket $BUCKET does not exist or is not accessible."
+            exit 1
+          fi
+
+          # Check if the CloudFront distribution exists
+          if ! aws cloudfront get-distribution --id "$DIST_ID" > /dev/null 2>&1; then
+            echo "CloudFront distribution $DIST_ID does not exist or is not accessible."
+            exit 1
+          fi
+
+          echo "Resources verified. Starting deploy to $HOST..."
+
           aws s3 sync build/ s3://$BUCKET/ --delete
-          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
 
           echo "::notice title=Deployment Complete::Website deployed to $HOST"
