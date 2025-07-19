@@ -1,73 +1,122 @@
-name: Deploy NextJS to AWS Dev
+name: Deploy NextJS to AWS
+
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/web/**'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment to deploy'
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - test
+          - prod
+
 env:
   project-directory: ./apps/web
   REPOSITORY: 'Greenstand/treetracker-wallet-app'
+
 jobs:
   build:
     name: Build Next.js Static Site
     runs-on: ubuntu-latest
-    if: |
-      !contains(github.event.head_commit.message, 'skip-ci')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Skip CI if 'skip-ci' in last commit message (only for push)
+        if: github.event_name == 'push'
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Last commit: $COMMIT_MSG"
+          if [[ "$COMMIT_MSG" == *"skip-ci"* ]]; then
+            echo "Skipping build due to commit message."
+            exit 0
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'yarn'
+
       - name: Install dependencies
         run: yarn install
-      - name: Set environment variables for dev
+
+      - name: Set environment variables
         run: |
-          cat > ${{ env.project-directory }}/.env.local << EOF
-          NEXT_PUBLIC_HOSTNAME=https://wallet-dev.treetracker.org
-          EOF
+          case "${{ github.event.inputs.environment }}" in
+            dev)
+              echo "NEXT_PUBLIC_HOSTNAME=https://wallet-dev.treetracker.org" > ${{ env.project-directory }}/.env.local
+              ;;
+            test)
+              echo "NEXT_PUBLIC_HOSTNAME=https://wallet-test.treetracker.org" > ${{ env.project-directory }}/.env.local
+              ;;
+            prod)
+              echo "NEXT_PUBLIC_HOSTNAME=https://wallet.treetracker.org" > ${{ env.project-directory }}/.env.local
+              ;;
+          esac
+
       - name: Build for deployment
         run: |
           cd ${{ env.project-directory }}
           yarn build
+
       - name: List output directory content
         run: |
           ls -la ${{ env.project-directory }}/out
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: static-site-build
           path: ${{ env.project-directory }}/out
           retention-days: 1
+
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
     needs: [build]
-    if: |
-      github.repository == 'Greenstand/treetracker-wallet-app'
+    if: github.repository == 'Greenstand/treetracker-wallet-app'
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: static-site-build
           path: build
+
       - name: List downloaded artifacts
-        run: |
-          ls -la build/
+        run: ls -la build/
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Deploy to S3 (dev)
+
+      - name: Deploy to S3 and Invalidate CloudFront
         run: |
-          aws s3 sync build/ s3://${{ secrets.DEV_CDN_S3_BUCKET }}/ --delete
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CDN_DISTRIBUTION_ID }} --paths "/*"
-      - name: Deployment complete
-        run: |
-          echo "::notice title=Deployment Complete::Website deployed to https://wallet-dev.treetracker.org"
+          case "${{ github.event.inputs.environment }}" in
+            dev)
+              BUCKET="${{ secrets.DEV_CDN_S3_BUCKET }}"
+              DIST_ID="${{ secrets.DEV_CDN_DISTRIBUTION_ID }}"
+              HOST="https://wallet-dev.treetracker.org"
+              ;;
+            test)
+              BUCKET="${{ secrets.TEST_CDN_S3_BUCKET }}"
+              DIST_ID="${{ secrets.TEST_CDN_DISTRIBUTION_ID }}"
+              HOST="https://wallet-test.treetracker.org"
+              ;;
+            prod)
+              BUCKET="${{ secrets.PROD_CDN_S3_BUCKET }}"
+              DIST_ID="${{ secrets.PROD_CDN_DISTRIBUTION_ID }}"
+              HOST="https://wallet.treetracker.org"
+              ;;
+          esac
+
+          aws s3 sync build/ s3://$BUCKET/ --delete
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+
+          echo "::notice title=Deployment Complete::Website deployed to $HOST"
