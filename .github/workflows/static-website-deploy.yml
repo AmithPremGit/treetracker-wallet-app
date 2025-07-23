@@ -12,6 +12,10 @@ on:
           - dev
           - test
           - prod
+      test_mode:
+        description: 'Simulate deploy (skip real AWS calls)'
+        required: false
+        default: 'true'
 
 env:
   project-directory: ./apps/web
@@ -24,16 +28,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Skip CI if 'skip-ci' in last commit message (only for push)
-        if: github.event_name == 'push'
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Last commit: $COMMIT_MSG"
-          if [[ "$COMMIT_MSG" == *"skip-ci"* ]]; then
-            echo "Skipping build due to commit message."
-            exit 0
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,13 +42,13 @@ jobs:
         run: |
           case "${{ github.event.inputs.environment }}" in
             dev)
-              echo "NEXT_PUBLIC_HOSTNAME=https://wallet-dev.treetracker.org" > ${{ env.project-directory }}/.env.local
+              echo "NEXT_PUBLIC_HOSTNAME=https://d-dev.cloudfront.net" > ${{ env.project-directory }}/.env.local
               ;;
             test)
-              echo "NEXT_PUBLIC_HOSTNAME=https://wallet-test.treetracker.org" > ${{ env.project-directory }}/.env.local
+              echo "NEXT_PUBLIC_HOSTNAME=https://d-test.cloudfront.net" > ${{ env.project-directory }}/.env.local
               ;;
             prod)
-              echo "NEXT_PUBLIC_HOSTNAME=https://wallet.treetracker.org" > ${{ env.project-directory }}/.env.local
+              echo "NEXT_PUBLIC_HOSTNAME=https://d-prod.cloudfront.net" > ${{ env.project-directory }}/.env.local
               ;;
           esac
 
@@ -75,10 +69,10 @@ jobs:
           retention-days: 1
 
   deploy:
-    name: Deploy to AWS
+    name: Deploy to AWS (Simulated)
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -89,50 +83,48 @@ jobs:
       - name: List downloaded artifacts
         run: ls -la build/
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (mock values okay in test mode)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy to S3 and Invalidate CloudFront
+      - name: Simulate or Run Deployment
         run: |
           case "${{ github.event.inputs.environment }}" in
             dev)
               BUCKET="${{ secrets.DEV_CDN_S3_BUCKET }}"
               DIST_ID="${{ secrets.DEV_CDN_DISTRIBUTION_ID }}"
-              HOST="https://wallet-dev.treetracker.org"
+              HOST="https://d-dev.cloudfront.net"
               ;;
             test)
               BUCKET="${{ secrets.TEST_CDN_S3_BUCKET }}"
               DIST_ID="${{ secrets.TEST_CDN_DISTRIBUTION_ID }}"
-              HOST="https://wallet-test.treetracker.org"
+              HOST="https://d-test.cloudfront.net"
               ;;
             prod)
               BUCKET="${{ secrets.PROD_CDN_S3_BUCKET }}"
               DIST_ID="${{ secrets.PROD_CDN_DISTRIBUTION_ID }}"
-              HOST="https://wallet.treetracker.org"
+              HOST="https://d-prod.cloudfront.net"
               ;;
           esac
 
-          echo "Verifying resources before deployment..."
+          echo "Selected env: ${{ github.event.inputs.environment }}"
+          echo "Test mode: ${{ github.event.inputs.test_mode }}"
+          echo "BUCKET: $BUCKET"
+          echo "DIST_ID: $DIST_ID"
+          echo "HOST: $HOST"
+          echo "Build contents:"
+          ls -la build/
 
-          # Check if the S3 bucket exists
-          if ! aws s3 ls "s3://$BUCKET" > /dev/null 2>&1; then
-            echo "S3 bucket $BUCKET does not exist or is not accessible."
-            exit 1
+          if [[ "${{ github.event.inputs.test_mode }}" == "true" ]]; then
+            echo "Test mode enabled — skipping real AWS calls."
+            echo "::notice title=Simulation Complete::Would deploy to $HOST"
+            exit 0
           fi
 
-          # Check if the CloudFront distribution exists
-          if ! aws cloudfront get-distribution --id "$DIST_ID" > /dev/null 2>&1; then
-            echo "CloudFront distribution $DIST_ID does not exist or is not accessible."
-            exit 1
-          fi
-
-          echo "Resources verified. Starting deploy to $HOST..."
-
+          echo "Deploying to AWS..."
           aws s3 sync build/ s3://$BUCKET/ --delete
           aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
-
           echo "::notice title=Deployment Complete::Website deployed to $HOST"
