@@ -83,7 +83,8 @@ jobs:
       - name: List downloaded artifacts
         run: ls -la build/
 
-      - name: Configure AWS credentials (mock values okay in test mode)
+      - name: Configure AWS credentials
+        if: github.event.inputs.test_mode != 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
