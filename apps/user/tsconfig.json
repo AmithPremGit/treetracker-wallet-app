@@ -24,6 +24,7 @@
       "@utils/*": ["libs/utils/*"],
       "@dtos/*": ["libs/validation/dtos/*"],
       "@packages/*": ["../../packages/*"]
-    }
+    },
+    "types": ["jest", "node"]
   }
 }
