@@ -24,8 +24,15 @@ jobs:
       - name: Yarn Clean Install
         run: yarn workspace user install
 
-      - name: Install Semantic Release
-        run: cd apps/user && yarn add -D semantic-release @semantic-release/git @semantic-release/exec @semantic-release/changelog @semantic-release/github
+      - name: Install Semantic Release Tools
+        run: |
+          npm install semantic-release@24.2.7 \
+            @semantic-release/changelog@6.0.3 \
+            @semantic-release/commit-analyzer@13.0.1 \
+            @semantic-release/git@10.0.1 \
+            @semantic-release/github@11.0.4 \
+            @semantic-release/npm@12.0.2 \
+            @semantic-release/release-notes-generator@14.0.3
 
       - name: Semantic Release
         run: cd apps/user && npx semantic-release

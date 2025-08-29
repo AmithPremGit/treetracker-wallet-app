@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ["main", "issue#508"],
+  branches: ["main"],
   tagFormat: "v${version}",
   plugins: [
     "@semantic-release/commit-analyzer",
@@ -11,7 +11,7 @@ module.exports = {
       },
     ],
     [
-      "@semantic-release/npm",
+      "@semantic-release/yarn",
       {
         npmPublish: false,
         pkgRoot: ".",
@@ -20,9 +20,8 @@ module.exports = {
     [
       "@semantic-release/git",
       {
-        assets: ["CHANGELOG.md", "package.json"],
-        message:
-          "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+        assets: ["package.json", "CHANGELOG.md"],
+        message: "chore(release): ${nextRelease.version} [skip ci]",
       },
     ],
     [

@@ -8,7 +8,7 @@
     "prettier": "prettier --write ."
   },
   "devDependencies": {
-    "@types/node": "^22.10.10",
+    "@types/node": "^24.2.1",
     "dotenv": "^17.2.0",
     "expo-constants": "^17.1.7",
     "lint-staged": "^15.2.7",
