@@ -1,0 +1,117 @@
+name: Deploy NextJS to AWS
+
+on:
+  # Allows you to run the deployment workflow manually from the Actions tab.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select environment to deploy"
+        required: true
+        type: choice
+        default: test
+        options:
+          - test
+          - prod
+
+env:
+  PROJECT_DIRECTORY: ./apps/web
+
+# Security Best Practice: Define permissions for the GITHUB_TOKEN
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Next.js Static Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Set Environment Variables for Build
+        run: |
+          # Set environment based on the manual input.
+          ENV_NAME=${{ github.event.inputs.environment }}
+
+          echo "Building for environment: $ENV_NAME"
+
+          case "$ENV_NAME" in
+            test)
+              echo "NEXT_PUBLIC_HOSTNAME=https://wallet-test.treetracker.org" > ${{ env.PROJECT_DIRECTORY }}/.env.local
+              ;;
+            prod)
+              echo "NEXT_PUBLIC_HOSTNAME=https://wallet.treetracker.org" > ${{ env.PROJECT_DIRECTORY }}/.env.local
+              ;;
+          esac
+          echo "Generated .env.local:"
+          cat ${{ env.PROJECT_DIRECTORY }}/.env.local
+
+      - name: Build Static Site
+        run: |
+          cd ${{ env.PROJECT_DIRECTORY }}
+          yarn build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site-build
+          path: ${{ env.PROJECT_DIRECTORY }}/out
+          retention-days: 1
+
+  deploy:
+    name: Deploy to AWS (${{ github.event.inputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [build]
+    # This job should only run from the main branch.
+    if: github.ref == 'refs/heads/main'
+    # Use environments for protection rules and environment-specific secrets
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: static-site-build
+          path: build/
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Required for CloudFront operations
+
+      - name: Deploy to S3 and Invalidate CloudFront
+        run: |
+          case "${{ github.event.inputs.environment }}" in
+            test)
+              BUCKET="${{ secrets.TEST_CDN_S3_BUCKET }}"
+              DIST_ID="${{ secrets.TEST_CDN_DISTRIBUTION_ID }}"
+              HOST="https://wallet-test.treetracker.org"
+              ;;
+            prod)
+              BUCKET="${{ secrets.PROD_CDN_S3_BUCKET }}"
+              DIST_ID="${{ secrets.PROD_CDN_DISTRIBUTION_ID }}"
+              HOST="https://wallet.treetracker.org"
+              ;;
+            *)
+              echo "Invalid environment selected."
+              exit 1
+              ;;
+          esac
+
+          echo "Deploying to $HOST..."
+
+          aws s3 sync build/ s3://$BUCKET/ --delete
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+
+          echo "::notice title=Deployment Complete::Website deployed to $HOST"
